@@ -34,8 +34,12 @@
             socket.on('connect', function () {
                 console.log("Connected");
             });
+
+            socket.emit('join', 'testRoom');
+
             socket.on('message', function (message) {
-                content.append(message + '<br />');
+                let msg = JSON.stringify(message);
+                content.append(msg + '<br />');
             });
 
             socket.on('disconnect', function () {
@@ -44,7 +48,8 @@
             });
             $("input[name=sendBtn]").click(function () {
                 var msg = { type: 'chat', message: username + " : " + $("input[name=chatTxt]").val() }
-                socket.json.send(msg);
+                // socket.json.send(msg);
+                socket.emit('message', msg);
                 $("input[name=chatTxt]").val("");
             });
         });

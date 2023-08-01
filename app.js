@@ -24,9 +24,17 @@ sub.subscribe("chatting");
 
 io.sockets.on('connection', function (client) {
 
+  client.on('join', function(result) {
+      client.leave(client.room);
+      client.join(result);
+      client.room = result;
+  });
+
   sub.on("message", function (channel, message) {
-    console.log("message received on server from publish ");
-    client.send(message);
+    let messageData = { resultData : message , client : client.id };
+    // client.send(messageData);
+    console.log(client.room);
+    io.sockets.in(client.room).emit('message', messageData);
   });
 
   client.on("message", function (msg) {
@@ -35,14 +43,18 @@ io.sockets.on('connection', function (client) {
       pub.publish("chatting",msg.message);
     }
 
-    else if(msg.type == "setUsername"){
-      pub.publish("chatting","A new user in connected:" + msg.user);
-      store.sadd("onlineUsers",msg.user);
-    }
+    // else if(msg.type == "setUsername"){
+    //   pub.publish("chatting","A new user in connected:" + msg.user);
+    //   store.sadd("onlineUsers",msg.user);
+    // }
   });
 
   client.on('disconnect', function () {
-    sub.quit();
-    pub.publish("chatting","User is disconnected :" + client.id);
+    // sub.quit();
+    console.log("chatting","User is disconnected :" + client.id);
   });
+
+  if (client.listenerCount('connect') > 1) {
+    client.removeListener('connect', client);
+  }
 });
